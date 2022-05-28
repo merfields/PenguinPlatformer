@@ -4,9 +4,10 @@ using UnityEngine;
 
 public abstract class State
 {
-    public abstract void OnStateStart();
+    public virtual void OnStateStart(StateMachine stateMachine){}
 
-    public abstract void StateUpdate();
+    public virtual void StateUpdate(StateMachine stateMachine){}
 
-    public abstract void OnStateExit();
+    public virtual void OnStateExit(StateMachine stateMachine){}
+
 }
