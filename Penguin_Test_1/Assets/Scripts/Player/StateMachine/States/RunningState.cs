@@ -1,6 +1,8 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class IdleState : State
+public class RunningState : State
 {
     public override void OnStateExit(StateMachine stateMachine)
     {
@@ -16,5 +18,4 @@ public class IdleState : State
     {
         
     }
-
 }

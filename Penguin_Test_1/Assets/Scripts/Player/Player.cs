@@ -44,7 +44,7 @@ public class Player : MonoBehaviour
     #region Movement
 
     [Header("Movement")]
-    [SerializeField] private Vector2 MoveInput;
+    [SerializeField] private Vector2 moveInput;
     [SerializeField] private float moveSpeed = 6;
     [SerializeField] private float slidingMoveSpeed = 40;
     float prevTargetSpeed = 0;
@@ -154,13 +154,12 @@ public class Player : MonoBehaviour
                 {
                     isAttacking = true;
                     StartCoroutine(Attack());
-
                 }
             }
 
             //Бег
 
-            MoveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             wallDirX = (controller.collisions.Left == true) ? -1 : 1;
 
             wallSliding = false;
@@ -206,16 +205,16 @@ public class Player : MonoBehaviour
 
             //В зависимости от значения isSliding находим velocity
 
-            float targetVelocityX = MoveInput.x * prevTargetSpeed;
+            float targetVelocityX = moveInput.x * prevTargetSpeed;
 
             if (isSliding == true && controller.collisions.Below)
             {
-                targetVelocityX = MoveInput.x * slidingMoveSpeed;
+                targetVelocityX = moveInput.x * slidingMoveSpeed;
                 prevTargetSpeed = slidingMoveSpeed;
             }
             else if (controller.collisions.Below || wallSliding)
             {
-                targetVelocityX = MoveInput.x * moveSpeed;
+                targetVelocityX = moveInput.x * moveSpeed;
                 prevTargetSpeed = moveSpeed;
             }
 
@@ -387,12 +386,12 @@ public class Player : MonoBehaviour
             if (wallSliding || stickToWallTime.TimeLeft > 0)
             {
                 audioManager.PlayClip("Jump");
-                if (wallSliding && wallDirX == MoveInput.x)
+                if (wallSliding && wallDirX == moveInput.x)
                 {
                     velocity.x = -wallDirX * wallJumpClimb.x;
                     velocity.y = wallJumpClimb.y;
                 }
-                else if (wallSliding && MoveInput.x == 0)
+                else if (wallSliding && moveInput.x == 0)
                 {
                     velocity.x = -wallDirX * wallJumpOff.x;
                     velocity.y = wallJumpOff.y;
