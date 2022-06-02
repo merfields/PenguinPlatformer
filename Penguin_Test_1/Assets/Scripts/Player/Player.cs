@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+//To Do: Change to state machine?
 
 [RequireComponent(typeof(Controller2D))]
 public class Player : MonoBehaviour
@@ -31,8 +32,8 @@ public class Player : MonoBehaviour
     Timer slideCounter;
     Timer slideCooldown;
     Timer jumpBuffer;
-    Timer coyoteTime;
-    Timer stickToWallTime;
+    Timer coyoteTimeTimer;
+    Timer stickToWallTimer;
     Timer playerKnockbackTimer;
     Timer attackTimer;
     float defaultKnockbackTime = 0.4f;
@@ -44,7 +45,7 @@ public class Player : MonoBehaviour
     #region Movement
 
     [Header("Movement")]
-    [SerializeField] private Vector2 MoveInput;
+    [SerializeField] private Vector2 moveInput;
     [SerializeField] private float moveSpeed = 6;
     [SerializeField] private float slidingMoveSpeed = 40;
     float prevTargetSpeed = 0;
@@ -82,17 +83,19 @@ public class Player : MonoBehaviour
     [SerializeField] private Vector2 wallJumpClimb;
     [SerializeField] private Vector2 wallJumpOff;
     [SerializeField] private Vector2 wallJumpLeap;
+    [SerializeField] private float wallCoyoteTime = 0.15f;
 
     int wallDirXMemory;
-    int wallDirX;
+    int wallDirX => (controller.collisions.Left == true) ? -1 : 1;
     bool wallSliding;
     #endregion
 
     #region Sliding
     [Header("Sliding")]
+    //To check if the character changed direction during slide, if he did then we will stop the slide
     bool isFacingRightDuringSlide;
     bool isSliding = false;
-    bool cooldownAnimationPlayed = false;
+    bool slideCooldownAnimationPlayed = false;
     #endregion
 
     #region Health System
@@ -110,7 +113,9 @@ public class Player : MonoBehaviour
     float velocityXSmoothing;
     bool isFacingRight = true;
     bool isAbleToAct = false;
-    
+
+    bool isGrounded => controller.collisions.Below;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -121,8 +126,8 @@ public class Player : MonoBehaviour
         animator = GetComponent<Animator>();
         slideCounter = gameObject.AddComponent<Timer>();
         jumpBuffer = gameObject.AddComponent<Timer>();
-        coyoteTime = gameObject.AddComponent<Timer>();
-        stickToWallTime = gameObject.AddComponent<Timer>();
+        coyoteTimeTimer = gameObject.AddComponent<Timer>();
+        stickToWallTimer = gameObject.AddComponent<Timer>();
         InvincibilityCounter = gameObject.AddComponent<Timer>();
         playerKnockbackTimer = gameObject.AddComponent<Timer>();
         attackTimer = gameObject.AddComponent<Timer>();
@@ -148,33 +153,44 @@ public class Player : MonoBehaviour
 
         if (isAbleToAct)
         {
-            if (attackTimer.TimeLeft <= 0)
+            //Attacking
+            if (Input.GetButtonDown("Fire2") && attackTimer.TimeLeft <= 0 && isGrounded)
             {
-                if (Input.GetButtonDown("Fire2"))
-                {
-                    isAttacking = true;
-                    StartCoroutine(Attack());
-
-                }
+                isAttacking = true;
+                StartCoroutine(SwordAttack());
             }
-
-            //Бег
-
-            MoveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-            wallDirX = (controller.collisions.Left == true) ? -1 : 1;
-
-            wallSliding = false;
 
             //Sliding
 
-            Slide();
+            if (Input.GetButtonDown("Fire1") && !isSliding && slideCooldown.TimeLeft == 0 && isGrounded)
+            {
+                isSliding = true;
+                slideCounter.TimeLeft = 0.5f;
+                audioManager.PlayClip("Slide");
+                isFacingRightDuringSlide = isFacingRight;
+            }
+
+            if (isSliding)
+            {
+                if (CheckIfShouldStopSliding() == true)
+                {
+                    isSliding = false;
+                    slideCounter.TimeLeft = 0;
+
+                    if (slideCooldownAnimationPlayed == false)
+                    {
+                        StartCoroutine(SlideCooldownAnimation());
+                    }
+                }
+            }
 
             //WallSliding
 
-            if ((controller.collisions.Left || controller.collisions.Right) && !controller.collisions.Below && velocity.y < 0)
+            wallSliding = false;
+
+            if ((controller.collisions.Left || controller.collisions.Right) && !isGrounded && velocity.y < 0)
             {
                 wallSliding = true;
-
                 isSliding = false;
 
                 if (velocity.y < -wallSlideSpeedMax)
@@ -182,46 +198,24 @@ public class Player : MonoBehaviour
                     velocity.y = -wallSlideSpeedMax;
                 }
 
-                stickToWallTime.TimeLeft = 0.1f;
+                stickToWallTimer.TimeLeft = wallCoyoteTime;
                 wallDirXMemory = wallDirX;
-
             }
-            animator.SetBool("isWallSliding", wallSliding);
 
-            if (stickToWallTime.TimeLeft == 0)
+            if (stickToWallTimer.TimeLeft == 0)
             {
                 wallDirXMemory = wallDirX;
             }
 
             //CoyoteTime
 
-            if (controller.collisions.Above || controller.collisions.Below)
+            if (controller.collisions.Above || isGrounded)
             {
                 velocity.y = 0;
-                if (controller.collisions.Below)
+                if (isGrounded)
                 {
-                    coyoteTime.TimeLeft = 0.1f;
+                    coyoteTimeTimer.TimeLeft = 0.1f;
                 }
-            }
-
-            //В зависимости от значения isSliding находим velocity
-
-            float targetVelocityX = MoveInput.x * prevTargetSpeed;
-
-            if (isSliding == true && controller.collisions.Below)
-            {
-                targetVelocityX = MoveInput.x * slidingMoveSpeed;
-                prevTargetSpeed = slidingMoveSpeed;
-            }
-            else if (controller.collisions.Below || wallSliding)
-            {
-                targetVelocityX = MoveInput.x * moveSpeed;
-                prevTargetSpeed = moveSpeed;
-            }
-
-            if (controller.collisions.Below || wallSliding)
-            {
-                animator.SetBool("IsSliding", isSliding);
             }
 
             //Jumping
@@ -229,7 +223,7 @@ public class Player : MonoBehaviour
             Jump();
 
             //Horizontal smoothing, в полете и на земле
-            if (controller.collisions.Below)
+            if (isGrounded)
             {
                 if (isSliding)
                 {
@@ -245,22 +239,31 @@ public class Player : MonoBehaviour
                 accelerationTimeChoice = accelerationTimeAirborn;
             }
 
-            velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, accelerationTimeChoice);
+            //Передвижение
+
+            //В зависимости от значения isSliding находим velocity
+
+            moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            velocity.x = FindVeloctiyX();
 
             //Поворот модели
 
-            if (!(isAttacking && !controller.collisions.Below) && (playerKnockbackTimer.TimeLeft <= 0))
+            if (velocity.x < -0.5 && isFacingRight)
+                Flip();
+            else if (velocity.x > 0.5 && !isFacingRight)
+                Flip();
+
+            if (isGrounded || wallSliding)
             {
-                if (velocity.x < -0.5 && isFacingRight)
-                    Flip();
-                else if (velocity.x > 0.5 && !isFacingRight)
-                    Flip();
+                animator.SetBool("IsSliding", isSliding);
             }
+
+            animator.SetBool("isWallSliding", wallSliding);
         }
 
         //Падение
 
-        if (velocity.y < 0 && !controller.collisions.Below)
+        if (velocity.y < 0 && !isGrounded)
         {
             animator.SetBool("isFalling", true);
         }
@@ -282,6 +285,37 @@ public class Player : MonoBehaviour
         animator.SetFloat("speed", Mathf.Abs(velocity.x));
     }
 
+    private bool CheckIfShouldStopSliding()
+    {
+        return (isFacingRightDuringSlide != isFacingRight || slideCounter.TimeLeft == 0);
+    }
+
+    private float FindVeloctiyX()
+    {
+        float targetVelocityX = FindTargetVelocityX();
+
+        return Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, accelerationTimeChoice);
+    }
+
+    public float FindTargetVelocityX()
+    {
+        float targetVelocityX = moveInput.x * prevTargetSpeed;
+
+        if (isSliding == true && isGrounded)
+        {
+            targetVelocityX = moveInput.x * slidingMoveSpeed;
+            prevTargetSpeed = slidingMoveSpeed;
+        }
+        else if (isGrounded || wallSliding)
+        {
+            targetVelocityX = moveInput.x * moveSpeed;
+            prevTargetSpeed = moveSpeed;
+        }
+
+        return targetVelocityX;
+    }
+
+
     private void DoChecks()
     {
 
@@ -295,7 +329,7 @@ public class Player : MonoBehaviour
             animator.SetBool("isKnocked", false);
         }
 
-        if (!(playerKnockbackTimer.TimeLeft > 0 || (isAttacking && controller.collisions.Below)))
+        if (!(playerKnockbackTimer.TimeLeft > 0 || (isAttacking && isGrounded)))
         {
             isAbleToAct = true;
         }
@@ -321,45 +355,9 @@ public class Player : MonoBehaviour
         transform.localScale = theScale;
     }
 
-
-    private void Slide()
-    {
-        if (Input.GetButtonDown("Fire1") && !isSliding && slideCooldown.TimeLeft == 0)
-        {
-            slideCounter.TimeLeft = 0.5f;
-            audioManager.PlayClip("Slide");
-
-            isSliding = true;
-
-            isFacingRightDuringSlide = isFacingRight;
-        }
-
-        if (isSliding && isFacingRightDuringSlide != isFacingRight)
-        {
-            if (cooldownAnimationPlayed == false && isSliding == true)
-            {
-                StartCoroutine(SlideCooldownAnimation());
-            }
-
-            isSliding = false;
-            slideCounter.TimeLeft = 0;
-        }
-
-        if (slideCounter.TimeLeft == 0)
-        {
-
-            if (cooldownAnimationPlayed == false && isSliding == true)
-            {
-                StartCoroutine(SlideCooldownAnimation());
-            }
-
-            isSliding = false;
-        }
-    }
-
     IEnumerator SlideCooldownAnimation()
     {
-        cooldownAnimationPlayed = true;
+        slideCooldownAnimationPlayed = true;
         slideCooldown.TimeLeft = 0.6f;
 
         while (slideCooldown.TimeLeft > 0)
@@ -373,7 +371,7 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         spriteRenderer.color = new Color(1, 1, 1, 1);
 
-        cooldownAnimationPlayed = false;
+        slideCooldownAnimationPlayed = false;
     }
 
     private void Jump()
@@ -384,36 +382,36 @@ public class Player : MonoBehaviour
 
             //Wall jumping
 
-            if (wallSliding || stickToWallTime.TimeLeft > 0)
+            if (wallSliding || stickToWallTimer.TimeLeft > 0)
             {
                 audioManager.PlayClip("Jump");
-                if (wallSliding && wallDirX == MoveInput.x)
+                if (wallSliding && wallDirX == moveInput.x)
                 {
                     velocity.x = -wallDirX * wallJumpClimb.x;
                     velocity.y = wallJumpClimb.y;
                 }
-                else if (wallSliding && MoveInput.x == 0)
+                else if (wallSliding && moveInput.x == 0)
                 {
                     velocity.x = -wallDirX * wallJumpOff.x;
                     velocity.y = wallJumpOff.y;
                 }
-                else if (stickToWallTime.TimeLeft > 0)
+                else if (stickToWallTimer.TimeLeft > 0)
                 {
                     velocity.x = -wallDirXMemory * wallJumpLeap.x;
                     velocity.y = wallJumpLeap.y;
 
-                    stickToWallTime.TimeLeft = 0;
+                    stickToWallTimer.TimeLeft = 0;
                 }
             }
         }
 
         //Jumping
 
-        if (jumpBuffer.TimeLeft > 0 && coyoteTime.TimeLeft > 0)
+        if (jumpBuffer.TimeLeft > 0 && coyoteTimeTimer.TimeLeft > 0)
         {
             audioManager.PlayClip("Jump");
             jumpBuffer.TimeLeft = 0;
-            coyoteTime.TimeLeft = 0;
+            coyoteTimeTimer.TimeLeft = 0;
             if (isSliding)
             {
                 velocity.y = slidingJumpVelocity;
@@ -443,24 +441,16 @@ public class Player : MonoBehaviour
         }
     }
 
-    private IEnumerator Attack()
+    private IEnumerator SwordAttack()
     {
         audioManager.PlayClip("Attack");
-
-        if (controller.collisions.Below)
-        {
-            velocity.x = 0;
-        }
-
         animator.SetTrigger("isAttacking");
+
+        velocity.x = 0;
+
         attackTimer.TimeLeft = 0.4f;
 
         yield return new WaitForSeconds(0.1f);
-
-        if (controller.collisions.Below)
-        {
-            velocity.x = 0;
-        }
 
         Collider2D[] attackedEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, enemyLayer);
 
@@ -522,13 +512,13 @@ public class Player : MonoBehaviour
             else
             {
                 Knockback(8, 16, defaultKnockbackTime, true);
-                StartCoroutine("ChangeAlpha");
+                StartCoroutine(ChangeAlphaOnTakingDamage());
             }
 
         }
     }
 
-    IEnumerator ChangeAlpha()
+    IEnumerator ChangeAlphaOnTakingDamage()
     {
         SpriteRenderer spriteRenderer = this.GetComponent<SpriteRenderer>();
         while (InvincibilityCounter.TimeLeft > 0)
@@ -543,7 +533,7 @@ public class Player : MonoBehaviour
 
     private void Knockback(float xKnockback, float yKnockback, float knockBackDuration, bool hitKnockback)
     {
-        if (controller.collisions.Below)
+        if (isGrounded)
         {
             velocity.x = 0;
         }
