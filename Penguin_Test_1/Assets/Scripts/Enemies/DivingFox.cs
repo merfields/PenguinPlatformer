@@ -1,10 +1,8 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class DivingFox : Enemy
 {
-
     [SerializeField]
     Player player;
 
@@ -19,7 +17,6 @@ public class DivingFox : Enemy
         {
             EnemyMovement();
         }
-
     }
 
     protected override void Start()
@@ -28,7 +25,6 @@ public class DivingFox : Enemy
         animator.SetInteger("AnimationOrder", 0);
         StartCoroutine("DivingFoxMovementCoroutine");
     }
-
 
     protected override void EnemyMovement()
     {
@@ -60,7 +56,6 @@ public class DivingFox : Enemy
                     globalWaypoints[2].y -= 10;
                 }
 
-
                 animator.SetInteger("AnimationOrder", 1);
                 foxMovementAllowed = true;
 
@@ -75,7 +70,6 @@ public class DivingFox : Enemy
                 }
                 foxMovementAllowed = false;
                 animator.SetInteger("AnimationOrder", 3);
-
 
                 //Меняем точки в зависимости от расположения игрока
                 if ((transform.position.x - player.transform.position.x) >= 0)

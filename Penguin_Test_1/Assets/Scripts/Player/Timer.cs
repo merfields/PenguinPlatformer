@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Timer: MonoBehaviour
+public class Timer : MonoBehaviour
 {
 
     private float timeLeft;

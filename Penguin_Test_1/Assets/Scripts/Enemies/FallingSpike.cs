@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Controller2D))]
@@ -27,7 +26,6 @@ public class FallingSpike : WaypointController
         StartCoroutine(FallCouroutine());
     }
 
-
     IEnumerator FallCouroutine()
     {
         while (true)
@@ -47,7 +45,6 @@ public class FallingSpike : WaypointController
                 controller.Move(returnVelocity * Time.deltaTime);
                 yield return null;
             }
-
 
             yield return null;
         }

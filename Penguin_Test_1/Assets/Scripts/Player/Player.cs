@@ -59,6 +59,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float timeToJumpApex = 0.4f;
     [SerializeField] private float slidingJumpHeight = 6;
     [SerializeField] private float slidingTimeToJumpApex = 0.6f;
+    [SerializeField] private const float CoyoteTime = 0.1f;
     float gravity;
     float slidingGravity;
 
@@ -83,7 +84,7 @@ public class Player : MonoBehaviour
     [SerializeField] private Vector2 wallJumpClimb;
     [SerializeField] private Vector2 wallJumpOff;
     [SerializeField] private Vector2 wallJumpLeap;
-    [SerializeField] private float wallCoyoteTime = 0.15f;
+    [SerializeField] private const float WallCoyoteTime = 0.15f;
 
     int wallDirXMemory;
     int wallDirX => (controller.collisions.Left == true) ? -1 : 1;
@@ -113,17 +114,17 @@ public class Player : MonoBehaviour
     float velocityXSmoothing;
     bool isFacingRight = true;
     bool isAbleToAct = false;
-
     bool isGrounded => controller.collisions.Below;
 
-    // Start is called before the first frame update
     void Start()
     {
+        //Сделать cm dont destroy on load 
         cm = GameObject.Find("CheckpointManager" + SceneManager.GetActiveScene().buildIndex).GetComponent<CheckpointManager>();
         transform.position = cm.LastCheckpointPosition;
 
         controller = GetComponent<Controller2D>();
-        animator = GetComponent<Animator>();
+        animator = gameObject.GetComponent<Animator>();
+
         slideCounter = gameObject.AddComponent<Timer>();
         jumpBuffer = gameObject.AddComponent<Timer>();
         coyoteTimeTimer = gameObject.AddComponent<Timer>();
@@ -133,20 +134,18 @@ public class Player : MonoBehaviour
         attackTimer = gameObject.AddComponent<Timer>();
         slideCooldown = gameObject.AddComponent<Timer>();
 
-        //По формуле выводим гравитацию и велосити от высоты прыжка и времени до высшей точки
-
+        //Calculating gravitation, dependent on jump height and time to reach the highest jump point
         gravity = -(2 * jumpHeight) / Mathf.Pow(timeToJumpApex, 2);
         jumpVelocity = Mathf.Abs(gravity * timeToJumpApex);
         minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * minJumpHeight);
 
-        //См. выше, но для слайда
+        //The same as above but for slide
 
         slidingGravity = -(2 * slidingJumpHeight) / Mathf.Pow(slidingTimeToJumpApex, 2);
         slidingJumpVelocity = Mathf.Abs(slidingGravity * slidingTimeToJumpApex);
         minSlidingJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(slidingGravity) * minJumpHeight);
     }
 
-    // Update is called once per frame
     void Update()
     {
         DoChecks();
@@ -157,6 +156,12 @@ public class Player : MonoBehaviour
             if (Input.GetButtonDown("Fire2") && attackTimer.TimeLeft <= 0 && isGrounded)
             {
                 isAttacking = true;
+                velocity.x = 0;
+                attackTimer.TimeLeft = 0.4f;
+
+                audioManager.PlayClip("Attack");
+                animator.SetTrigger("isAttacking");
+
                 StartCoroutine(SwordAttack());
             }
 
@@ -198,7 +203,7 @@ public class Player : MonoBehaviour
                     velocity.y = -wallSlideSpeedMax;
                 }
 
-                stickToWallTimer.TimeLeft = wallCoyoteTime;
+                stickToWallTimer.TimeLeft = WallCoyoteTime;
                 wallDirXMemory = wallDirX;
             }
 
@@ -214,34 +219,38 @@ public class Player : MonoBehaviour
                 velocity.y = 0;
                 if (isGrounded)
                 {
-                    coyoteTimeTimer.TimeLeft = 0.1f;
+                    coyoteTimeTimer.TimeLeft = CoyoteTime;
                 }
             }
 
             //Jumping
 
-            Jump();
+            if (Input.GetButtonDown("Jump"))
+            {
+                jumpBuffer.TimeLeft = 0.2f;
+
+                if (wallSliding || stickToWallTimer.TimeLeft > 0)
+                {
+                    WallJump();
+                }
+            }
+
+            if (jumpBuffer.TimeLeft > 0 && coyoteTimeTimer.TimeLeft > 0)
+            {
+                RegularJump();
+            }
+            if (Input.GetKeyUp(KeyCode.Space))
+            {
+                JumpCancel();
+            }
+
+            //Movement
 
             //Horizontal smoothing, в полете и на земле
-            if (isGrounded)
-            {
-                if (isSliding)
-                {
-                    accelerationTimeChoice = accelerationTimeSliding;
-                }
-                else
-                {
-                    accelerationTimeChoice = accelerationTimeGrounded;
-                }
-            }
-            else
-            {
-                accelerationTimeChoice = accelerationTimeAirborn;
-            }
 
-            //Передвижение
+            accelerationTimeChoice = FindAccelerationTime();
 
-            //В зависимости от значения isSliding находим velocity
+            //Find velocity, different for sliding
 
             moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             velocity.x = FindVeloctiyX();
@@ -261,7 +270,7 @@ public class Player : MonoBehaviour
             animator.SetBool("isWallSliding", wallSliding);
         }
 
-        //Падение
+        //Falling animation
 
         if (velocity.y < 0 && !isGrounded)
         {
@@ -272,17 +281,98 @@ public class Player : MonoBehaviour
             animator.SetBool("isFalling", false);
         }
 
-        //Гравитация
+        ApplyGravity();
 
+        controller.Move(velocity * Time.deltaTime);
+
+        animator.SetFloat("speed", Mathf.Abs(velocity.x));
+    }
+
+    private void JumpCancel()
+    {
+        if (isSliding)
+        {
+            if (velocity.y > minSlidingJumpVelocity)
+            {
+                velocity.y = minSlidingJumpVelocity;
+            }
+        }
+        else
+        {
+            if (velocity.y > minJumpVelocity)
+            {
+                velocity.y = minJumpVelocity;
+            }
+        }
+    }
+
+    private void RegularJump()
+    {
+        audioManager.PlayClip("Jump");
+        jumpBuffer.TimeLeft = 0;
+        coyoteTimeTimer.TimeLeft = 0;
+        if (isSliding)
+        {
+            velocity.y = slidingJumpVelocity;
+        }
+        else
+        {
+            velocity.y = jumpVelocity;
+        }
+        animator.SetBool("isJumping", true);
+    }
+
+    private void WallJump()
+    {
+        audioManager.PlayClip("Jump");
+        if (wallSliding && wallDirX == moveInput.x)
+        {
+            //Climb jump
+            velocity.x = -wallDirX * wallJumpClimb.x;
+            velocity.y = wallJumpClimb.y;
+        }
+        else if (wallSliding && moveInput.x == 0)
+        {
+            //Small jump off the wall
+            velocity.x = -wallDirX * wallJumpOff.x;
+            velocity.y = wallJumpOff.y;
+        }
+        else if (stickToWallTimer.TimeLeft > 0)
+        {
+            //Regular wall jump
+            velocity.x = -wallDirXMemory * wallJumpLeap.x;
+            velocity.y = wallJumpLeap.y;
+
+            stickToWallTimer.TimeLeft = 0;
+        }
+    }
+
+    private void ApplyGravity()
+    {
         if (!isSliding)
         {
             velocity.y += gravity * Time.deltaTime;
         }
         else velocity.y += slidingGravity * Time.deltaTime;
+    }
 
-        controller.Move(velocity * Time.deltaTime);
-
-        animator.SetFloat("speed", Mathf.Abs(velocity.x));
+    private float FindAccelerationTime()
+    {
+        if (isGrounded)
+        {
+            if (isSliding)
+            {
+                return accelerationTimeSliding;
+            }
+            else
+            {
+                return accelerationTimeGrounded;
+            }
+        }
+        else
+        {
+            return accelerationTimeAirborn;
+        }
     }
 
     private bool CheckIfShouldStopSliding()
@@ -297,7 +387,7 @@ public class Player : MonoBehaviour
         return Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, accelerationTimeChoice);
     }
 
-    public float FindTargetVelocityX()
+    private float FindTargetVelocityX()
     {
         float targetVelocityX = moveInput.x * prevTargetSpeed;
 
@@ -314,7 +404,6 @@ public class Player : MonoBehaviour
 
         return targetVelocityX;
     }
-
 
     private void DoChecks()
     {
@@ -338,7 +427,6 @@ public class Player : MonoBehaviour
             isAbleToAct = false;
         }
     }
-
 
     public void OnLanding()
     {
@@ -374,82 +462,8 @@ public class Player : MonoBehaviour
         slideCooldownAnimationPlayed = false;
     }
 
-    private void Jump()
-    {
-        if (Input.GetButtonDown("Jump"))
-        {
-            jumpBuffer.TimeLeft = 0.2f;
-
-            //Wall jumping
-
-            if (wallSliding || stickToWallTimer.TimeLeft > 0)
-            {
-                audioManager.PlayClip("Jump");
-                if (wallSliding && wallDirX == moveInput.x)
-                {
-                    velocity.x = -wallDirX * wallJumpClimb.x;
-                    velocity.y = wallJumpClimb.y;
-                }
-                else if (wallSliding && moveInput.x == 0)
-                {
-                    velocity.x = -wallDirX * wallJumpOff.x;
-                    velocity.y = wallJumpOff.y;
-                }
-                else if (stickToWallTimer.TimeLeft > 0)
-                {
-                    velocity.x = -wallDirXMemory * wallJumpLeap.x;
-                    velocity.y = wallJumpLeap.y;
-
-                    stickToWallTimer.TimeLeft = 0;
-                }
-            }
-        }
-
-        //Jumping
-
-        if (jumpBuffer.TimeLeft > 0 && coyoteTimeTimer.TimeLeft > 0)
-        {
-            audioManager.PlayClip("Jump");
-            jumpBuffer.TimeLeft = 0;
-            coyoteTimeTimer.TimeLeft = 0;
-            if (isSliding)
-            {
-                velocity.y = slidingJumpVelocity;
-            }
-            else
-            {
-                velocity.y = jumpVelocity;
-            }
-            animator.SetBool("isJumping", true);
-        }
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            if (isSliding)
-            {
-                if (velocity.y > minSlidingJumpVelocity)
-                {
-                    velocity.y = minSlidingJumpVelocity;
-                }
-            }
-            else
-            {
-                if (velocity.y > minJumpVelocity)
-                {
-                    velocity.y = minJumpVelocity;
-                }
-            }
-        }
-    }
-
     private IEnumerator SwordAttack()
     {
-        audioManager.PlayClip("Attack");
-        animator.SetTrigger("isAttacking");
-
-        velocity.x = 0;
-
-        attackTimer.TimeLeft = 0.4f;
-
         yield return new WaitForSeconds(0.1f);
 
         Collider2D[] attackedEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, enemyLayer);
@@ -596,13 +610,12 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        //Перезагружаю сцену если коснулся препятствия
+        //Reload the scene if touched killing object(spikes etc)
         if (collision.CompareTag("DeathHazard"))
         {
             StartCoroutine("PlayerDeath");
         }
 
-        //Наношу дамаг если коснулся препятствия
         if (collision.CompareTag("DamageHazard"))
         {
             PlayerTakeDamage();

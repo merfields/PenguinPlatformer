@@ -11,7 +11,6 @@ public class Parallax : MonoBehaviour
 
     Vector2 travel => (Vector2)camera.transform.position - startPos;
 
-
     private float distanceFromPlayer;
     private float clippingPlaneZ;
     [SerializeField] float parallax;

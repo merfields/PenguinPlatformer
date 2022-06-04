@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Knight : Enemy
@@ -15,17 +14,11 @@ public class Knight : Enemy
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private float attackRadius;
 
-    [SerializeField]
-    Player player;
+    [SerializeField] Player player;
+    [SerializeField] AudioManager audioManager;
 
-    [SerializeField]
-    AudioManager audioManager;
-
-    [SerializeField]
-    float distanceToPlayer = 3f;
-
-    [SerializeField]
-    float distanceToPlayerToMove = 10f;
+    [SerializeField] float distanceToPlayer = 3f;
+    [SerializeField] float distanceToPlayerToMove = 10f;
 
     bool knockbackCouroutineStarted = false;
 
@@ -39,7 +32,8 @@ public class Knight : Enemy
         }
         UpdateRaycastOrigins();
 
-        if (knockbackCount <= 0){
+        if (knockbackCount <= 0)
+        {
             animator.SetBool("isStunned", false);
         }
 
@@ -56,9 +50,6 @@ public class Knight : Enemy
 
     protected override void EnemyMovement()
     {
-       
-        
-        
         if (Vector2.Distance(transform.position, player.transform.position) >= distanceToPlayer)
         {
 
@@ -87,10 +78,8 @@ public class Knight : Enemy
         else
         {
             if (knockbackCount <= 0)
-            StartCoroutine(Attack());
+                StartCoroutine(Attack());
         }
-
-
 
         if (knockbackCount <= 0)
         {
@@ -101,17 +90,6 @@ public class Knight : Enemy
                 Flip();
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 
     public void SlideIntoKnight()
     {
@@ -175,6 +153,4 @@ public class Knight : Enemy
         knockbackCouroutineStarted = false;
 
     }
-
-
 }
