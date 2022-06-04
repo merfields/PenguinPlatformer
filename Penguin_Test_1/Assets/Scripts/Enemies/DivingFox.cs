@@ -3,8 +3,7 @@ using UnityEngine;
 
 public class DivingFox : Enemy
 {
-    [SerializeField]
-    Player player;
+    [SerializeField] Player player;
 
     Vector2 enemyVelocity;
     bool foxMovementAllowed = false;

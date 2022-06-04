@@ -15,8 +15,6 @@ public class Parallax : MonoBehaviour
     private float clippingPlaneZ;
     [SerializeField] float parallax;
 
-    //Эффект передвижения фонов вместе с игроком, с разной скоростью, создающий иллюзию глубины картинки
-
     void Start()
     {
         startPos = transform.position;

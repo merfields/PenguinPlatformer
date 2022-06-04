@@ -4,9 +4,9 @@ public class CameraController : MonoBehaviour
 {
     [SerializeField] GameObject virtualCamera;
 
-    /*На уровне установлено множество камер, каждая относится к определенному триггеру,
-    при переходе из одного в другой меняется активная камера.*/
-    
+    /*There are several cameras on the level, each has its own trigger.
+    When player enters a different trigger camera changes*/
+
     private void OnTriggerEnter2D(Collider2D enteringObject)
     {
         if (enteringObject.CompareTag("Player") && !enteringObject.isTrigger)
