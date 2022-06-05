@@ -3,10 +3,9 @@ using UnityEngine;
 
 public class MovingPlatform : WaypointController
 {
-    List<PassengerMovement> passengerMovement;
-    [SerializeField] LayerMask passengerMask;
-    Dictionary<Transform, Controller2D> passengerDictionary = new Dictionary<Transform, Controller2D>();
-    
+    private List<PassengerMovement> passengerMovement;
+    [SerializeField] private LayerMask passengerMask;
+    private Dictionary<Transform, Controller2D> passengerDictionary = new Dictionary<Transform, Controller2D>();
 
     protected override void Update()
     {
@@ -29,26 +28,24 @@ public class MovingPlatform : WaypointController
             {
                 passengerDictionary.Add(passenger.transform, passenger.transform.GetComponent<Controller2D>());
             }
-                if (passenger.moveBeforePlatform == beforeMovePlatform)
-                {
-                    passengerDictionary[passenger.transform].Move(passenger.velocity, passenger.standingOnPlatform);
-                }
-            
+            if (passenger.moveBeforePlatform == beforeMovePlatform)
+            {
+                passengerDictionary[passenger.transform].Move(passenger.velocity, passenger.standingOnPlatform);
+            }
         }
     }
-
 
     protected void CalculatePassengerMovement(Vector2 velocity)
     {
         HashSet<Transform> movedPassengers = new HashSet<Transform>();
         passengerMovement = new List<PassengerMovement>();
 
-
         float directionX = Mathf.Sign(velocity.x);
         float directionY = Mathf.Sign(velocity.y);
 
         //Vertically moving platform
-        if (velocity.y != 0) {
+        if (velocity.y != 0)
+        {
             float rayLength = Mathf.Abs(velocity.y) + skinWidth;
 
             for (int i = 0; i < verticalRayCount; i++)
@@ -69,7 +66,6 @@ public class MovingPlatform : WaypointController
                     }
                 }
             }
-            
         }
 
         //Horrizontally moving platform
@@ -94,7 +90,6 @@ public class MovingPlatform : WaypointController
                         passengerMovement.Add(new PassengerMovement(hit.transform, new Vector2(pushX, pushY), false, true));
                     }
                 }
-
             }
         }
 
@@ -121,8 +116,6 @@ public class MovingPlatform : WaypointController
                     }
                 }
             }
-
-
         }
     }
 
@@ -139,7 +132,6 @@ public class MovingPlatform : WaypointController
             velocity = _velocity;
             standingOnPlatform = _standingOnPlatform;
             moveBeforePlatform = _moveBeforePlatform;
-
         }
     }
 }

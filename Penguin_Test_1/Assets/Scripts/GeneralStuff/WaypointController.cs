@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class WaypointController : RaycastController
 {
@@ -14,9 +12,8 @@ public class WaypointController : RaycastController
     public float easeAmount;
 
     protected int fromWaypointIndex = 0;
-    //
     protected int toWaypointIndex = 1;
-    //
+    
     protected float percentBetweenWaypoints;
     protected float nextMoveTime;
 

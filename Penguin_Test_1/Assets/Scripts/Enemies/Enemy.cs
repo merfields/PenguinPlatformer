@@ -12,7 +12,6 @@ public class Enemy : WaypointController
 
     [SerializeField] protected float enemyHP = 1;
 
-
     // Start is called before the first frame update
     protected override void Start()
     {

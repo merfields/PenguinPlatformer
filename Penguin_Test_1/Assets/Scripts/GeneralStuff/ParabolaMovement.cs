@@ -1,19 +1,16 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ParabolaMovement : MovingPlatform
 {
-    public AnimationCurve curve;
+    [SerializeField] private AnimationCurve curve;
+    private Vector2 end;
+    private Vector2 start;
+    private float time;
 
-    Vector2 end;
-    Vector2 start;
-    float time;
+    private bool arrived = true;
 
-    bool arrived = true;
-
-    [SerializeField]
-    ParabolaMovement slowest;
+    [SerializeField] private ParabolaMovement slowest;
 
     protected override void Start()
     {
@@ -51,7 +48,6 @@ public class ParabolaMovement : MovingPlatform
                 yield return null;
             }
 
-
             time = 0;
             transform.position = globalWaypoints[1];
             start = transform.position;
@@ -71,7 +67,6 @@ public class ParabolaMovement : MovingPlatform
             {
                 yield return null;
             }
-
 
             yield return null;
         }

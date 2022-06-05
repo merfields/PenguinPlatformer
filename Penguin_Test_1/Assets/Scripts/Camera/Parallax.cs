@@ -3,17 +3,17 @@
 public class Parallax : MonoBehaviour
 {
 
-    [SerializeField] Camera camera;
-    [SerializeField] Transform player;
+    [SerializeField] private Camera camera;
+    [SerializeField] private Transform player;
 
     private Vector2 startPos;
     private float startZ;
 
-    Vector2 travel => (Vector2)camera.transform.position - startPos;
+    private Vector2 travel => (Vector2)camera.transform.position - startPos;
 
     private float distanceFromPlayer;
     private float clippingPlaneZ;
-    [SerializeField] float parallax;
+    [SerializeField] private float parallax;
 
     void Start()
     {

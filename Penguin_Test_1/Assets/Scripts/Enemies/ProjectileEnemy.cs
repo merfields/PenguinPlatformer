@@ -4,26 +4,19 @@ using UnityEngine;
 
 public class ProjectileEnemy : Enemy
 {
-    public Player player;
+    [SerializeField] private Player player;
     [SerializeField] private Rigidbody2D projectile;
 
-    Vector2 enemyVelocity;
+    private Vector2 enemyVelocity;
     private Rigidbody2D bullet;
 
-    [SerializeField]
-    float projectileSpeed;
+    [SerializeField] private float projectileSpeed;
+    private float bulletTimer;
+    [SerializeField] private float timeToShoot;
+    [SerializeField] private float distanceToPlayerToShoot;
 
-    float bulletTimer;
-
-    [SerializeField]
-    float timeToShoot;
-
-    [SerializeField]
-    float distanceToPlayerToShoot;
-
-    bool shootingCoroutineStarted = false;
-    bool knockbackCouroutineStarted = false;
-
+    private bool shootingCoroutineStarted = false;
+    private bool knockbackCouroutineStarted = false;
 
     protected override void Start()
     {
@@ -70,16 +63,14 @@ public class ProjectileEnemy : Enemy
     {
         if (Vector3.Distance(player.transform.position, transform.position) < distanceToPlayerToShoot)
         {
-            //Debug.Log("Distance");
-            if (bulletTimer <= 0 && !shootingCoroutineStarted) {
-                //Debug.Log("Timer ready");
-                StartCoroutine("ShootProjectile");
+            if (bulletTimer <= 0 && !shootingCoroutineStarted)
+            {
+                StartCoroutine(ShootProjectile());
             }
         }
     }
 
-
-    IEnumerator ShootProjectile()
+    private IEnumerator ShootProjectile()
     {
         shootingCoroutineStarted = true;
 
@@ -91,7 +82,6 @@ public class ProjectileEnemy : Enemy
 
         bullet = Instantiate(projectile, new Vector3(transform.position.x + 1 * Mathf.Sign(transform.localScale.x) * -1, transform.position.y + 0.6f, 0), transform.rotation);
         bullet.velocity = new Vector3(projectileSpeed * Mathf.Sign(transform.localScale.x) * -1, 0);
-
         bulletTimer = timeToShoot;
 
         yield return new WaitForSeconds(1f);
@@ -99,7 +89,6 @@ public class ProjectileEnemy : Enemy
         animator.SetInteger("MonkeyAnimOrder", 1);
 
         shootingCoroutineStarted = false;
-        //yield return null;
     }
 
 
@@ -113,6 +102,6 @@ public class ProjectileEnemy : Enemy
         yield return new WaitForSeconds(0.4f);
 
         knockbackCouroutineStarted = false;
-        
+
     }
 }

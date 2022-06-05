@@ -407,7 +407,6 @@ public class Player : MonoBehaviour
 
     private void DoChecks()
     {
-
         if (attackTimer.TimeLeft <= 0)
         {
             isAttacking = false;
@@ -472,7 +471,7 @@ public class Player : MonoBehaviour
         {
             if (enemy.gameObject.GetComponent<SpikeyThing>() != null)
             {
-                if (enemy.gameObject.GetComponent<SpikeyThing>().hitBySlide == true)
+                if (enemy.gameObject.GetComponent<SpikeyThing>().HitBySlide == true)
                 {
                     enemy.GetComponent<Enemy>().TakeDamage(1);
                     audioManager.PlayClip("EnemyDamaged");

@@ -5,10 +5,10 @@ public class Checkpoint : MonoBehaviour
 {
 
     private CheckpointManager cm;
-    [SerializeField] AudioManager am;
-    SpriteRenderer sr;
-    [SerializeField] Sprite greenFlag;
-    bool alreadyChecked = false;
+    [SerializeField] private AudioManager am;
+    private SpriteRenderer sr;
+    [SerializeField] private Sprite greenFlag;
+    private bool alreadyChecked = false;
 
 
     void Start()

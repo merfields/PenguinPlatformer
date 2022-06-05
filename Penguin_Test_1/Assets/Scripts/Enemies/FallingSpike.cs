@@ -4,15 +4,11 @@ using UnityEngine;
 [RequireComponent(typeof(Controller2D))]
 public class FallingSpike : WaypointController
 {
-    Controller2D controller;
-    [SerializeField] Vector2 fallVelocity;
-
-    [SerializeField] Vector2 returnVelocity;
-
-    [SerializeField] float waitTimeAfterFall;
-
-    [SerializeField]
-    float waitTimeBeforeFall;
+    private Controller2D controller;
+    [SerializeField] private Vector2 fallVelocity;
+    [SerializeField] private Vector2 returnVelocity;
+    [SerializeField] private float waitTimeAfterFall;
+    [SerializeField] private float waitTimeBeforeFall;
 
     // Start is called before the first frame update
     protected override void Start()

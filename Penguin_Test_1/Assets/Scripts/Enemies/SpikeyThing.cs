@@ -6,11 +6,10 @@ using UnityEngine;
 
 public class SpikeyThing : Enemy
 {
-    Vector2 enemyVelocity;
-    float knockbackCount = 0;
-    [HideInInspector]
-    public bool hitBySlide = false;
-    bool shellActivated = false;
+    private Vector2 enemyVelocity;
+    private float knockbackCount = 0;
+    public bool HitBySlide { get; private set; } = false;
+    private bool shellActivated = false;
 
     // Update is called once per frame
     protected override void Update()
@@ -34,25 +33,20 @@ public class SpikeyThing : Enemy
             }
         }
 
-        if (knockbackCount <= 0 && !hitBySlide)
+        if (knockbackCount <= 0 && !HitBySlide)
         {
             enemyVelocity = CalculateObjectMovement();
-            enemyVelocity.y += enemyGravity * Time.deltaTime;
-            controller.Move(enemyVelocity);
         }
-
         else
         {
             if (controller.collisions.Below)
             {
                 enemyVelocity.x = 0;
             }
-
             knockbackCount -= Time.deltaTime;
-            enemyVelocity.y += enemyGravity * Time.deltaTime;
-            //
-            controller.Move(enemyVelocity * Time.deltaTime);
         }
+        enemyVelocity.y += enemyGravity * Time.deltaTime;
+        controller.Move(enemyVelocity * Time.deltaTime);
 
         if (enemyVelocity.x < 0 && isFacingRight)
             Flip();
@@ -62,13 +56,13 @@ public class SpikeyThing : Enemy
 
     public void SlideIntoSpikey()
     {
-        if (hitBySlide == false)
+        if (HitBySlide == false)
         {
-            hitBySlide = true;
+            HitBySlide = true;
             enemyVelocity.x = 0;
             enemyVelocity.y = 16;
             knockbackCount = 0.4f;
-            
+
 
             Vector3 theScale = transform.localScale;
             theScale.y *= -1;

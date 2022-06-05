@@ -4,7 +4,6 @@ using UnityEngine.Events;
 [RequireComponent(typeof(BoxCollider2D))]
 public class Controller2D : RaycastController
 {
-
     public struct CollisionInfo
     {
         public bool Above, Below;
@@ -31,8 +30,8 @@ public class Controller2D : RaycastController
     private bool wasGrounded = true;
     public UnityEvent OnLandEvent;
 
-    float maxClimbAngle = 80;
-    float maxDescendAngle = 75;
+    private float maxClimbAngle = 80;
+    private float maxDescendAngle = 75;
 
     protected override void Start()
     {
@@ -223,7 +222,6 @@ public class Controller2D : RaycastController
         Vector2 rayOrigin = (directionX == -1) ? raycastOrigins.bottomRight : raycastOrigins.bottomLeft;
         RaycastHit2D hit = Physics2D.Raycast(rayOrigin, -Vector2.up, Mathf.Infinity, collisionMask);
 
-
         if (!hit)
         {
             return;
@@ -234,12 +232,6 @@ public class Controller2D : RaycastController
         {
             return;
         }
-
-        /*//Если направление нормали(перпендикуляр к наклонной поверхности) и направление движения совпадают, то мы спускаемся по наклонной.
-        if (Mathf.Sign(hit.normal.x) != directionX)
-        {
-            return;
-        }*/
 
         if (hit.distance - skinWidth <= Mathf.Tan(SlopeAngle * Mathf.Deg2Rad) * Mathf.Abs(velocity.x))
         {
@@ -252,7 +244,6 @@ public class Controller2D : RaycastController
             collisions.DescendingSlope = true;
             collisions.Below = true;
         }
-
     }
 
     private void OnDrawGizmos()
@@ -263,10 +254,6 @@ public class Controller2D : RaycastController
         Gizmos.color = Color.red;
         Gizmos.DrawLine(rayOrigin, hit.point);
 
-
-
         Gizmos.DrawLine(hit.point, hit.point + hit.normal);
-
     }
-
 }

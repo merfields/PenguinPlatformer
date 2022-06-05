@@ -3,29 +3,29 @@ using UnityEngine;
 
 public class Knight : Enemy
 {
-    Vector2 enemyVelocity;
-    float knockbackCount = 0;
-    [HideInInspector]
-    public bool hitBySlide = false;
+    private Vector2 enemyVelocity;
+    private float knockbackCount = 0;
+    private bool hitBySlide = false;
 
-    bool isAttacking = false;
+    private bool isAttacking = false;
 
     [SerializeField] private Transform attackPoint;
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private float attackRadius;
 
-    [SerializeField] Player player;
-    [SerializeField] AudioManager audioManager;
+    [SerializeField] private Player player;
+    [SerializeField] private AudioManager audioManager;
 
-    [SerializeField] float distanceToPlayer = 3f;
-    [SerializeField] float distanceToPlayerToMove = 10f;
+    [SerializeField] private float distanceToPlayerToAttack = 3f;
+    [SerializeField] private float distanceToPlayerToMove = 10f;
+    private float distanceToPlayer;
 
-    bool knockbackCouroutineStarted = false;
+    private bool knockbackCouroutineStarted = false;
 
-    // Update is called once per frame
     protected override void Update()
     {
         knockbackCount -= Time.deltaTime;
+
         if (knockbackCouroutineStarted == false)
         {
             enemyVelocity.x = 0;
@@ -37,7 +37,9 @@ public class Knight : Enemy
             animator.SetBool("isStunned", false);
         }
 
-        if (!isAttacking && Vector2.Distance(transform.position, player.transform.position) <= distanceToPlayerToMove && !knockbackCouroutineStarted)
+        distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
+
+        if (!isAttacking && (distanceToPlayer <= distanceToPlayerToMove) && !knockbackCouroutineStarted)
         {
             EnemyMovement();
         }
@@ -50,12 +52,10 @@ public class Knight : Enemy
 
     protected override void EnemyMovement()
     {
-        if (Vector2.Distance(transform.position, player.transform.position) >= distanceToPlayer)
+        if (distanceToPlayer >= distanceToPlayerToAttack)
         {
-
             if (knockbackCount <= 0)
             {
-
                 if (controller.collisions.Below || controller.collisions.Above)
                 {
                     enemyVelocity.y = 0;
@@ -65,20 +65,17 @@ public class Knight : Enemy
             if (knockbackCount <= 0 && !hitBySlide)
             {
                 enemyVelocity = CalculateObjectMovement();
-                enemyVelocity.y += enemyGravity * Time.deltaTime;
-                controller.Move(enemyVelocity);
             }
 
-            else
-            {
-                enemyVelocity.y += enemyGravity * Time.deltaTime;
-                controller.Move(enemyVelocity * Time.deltaTime);
-            }
+            enemyVelocity.y += enemyGravity * Time.deltaTime;
+            controller.Move(enemyVelocity);
         }
         else
         {
             if (knockbackCount <= 0)
+            {
                 StartCoroutine(Attack());
+            }
         }
 
         if (knockbackCount <= 0)
@@ -106,7 +103,6 @@ public class Knight : Enemy
     private IEnumerator Attack()
     {
         isAttacking = true;
-
         animator.SetTrigger("isAttacking");
 
         yield return new WaitForSeconds(0.4f);
@@ -151,6 +147,5 @@ public class Knight : Enemy
         globalWaypoints[1] += transform.position - positionBeforeKnockback;
 
         knockbackCouroutineStarted = false;
-
     }
 }

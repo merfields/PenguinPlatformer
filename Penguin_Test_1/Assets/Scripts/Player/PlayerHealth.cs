@@ -1,20 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour
 {
-
     [SerializeField] private int health = 3;
     [SerializeField] private int numberOfHearts = 3;
-
-    [SerializeField]
-    Image[] hearts;
-
-    [SerializeField]
-    Sprite heartSprite;
-
+    [SerializeField] Image[] hearts;
+    [SerializeField] Sprite heartSprite;
 
     // Update is called once per frame
     void Update()

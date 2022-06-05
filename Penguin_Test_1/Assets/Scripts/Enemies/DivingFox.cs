@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class DivingFox : Enemy
 {
-    [SerializeField] Player player;
-    Vector2 enemyVelocity;
-    bool foxMovementAllowed = false;
+    [SerializeField] private Player player;
+    private Vector2 enemyVelocity;
+    private bool foxMovementAllowed = false;
 
     protected override void Update()
     {
@@ -39,7 +39,6 @@ public class DivingFox : Enemy
             destination.x = globalWaypoints[2].x;
             destination.y = globalWaypoints[2].y;
 
-
             //While the player is close enough, perform jumping attack
             while (Vector2.Distance(transform.position, player.transform.position) <= 5)
             {
@@ -59,7 +58,7 @@ public class DivingFox : Enemy
                 animator.SetInteger("FoxAnimationOrder", 1);
                 foxMovementAllowed = true;
 
-                //Юнит достигает точки назначения
+                //When unity reaches its destination continue coroutine
                 while (!(controller.collisions.Below))
                 {
                     if (fromWaypointIndex == 1)
@@ -71,7 +70,7 @@ public class DivingFox : Enemy
                 foxMovementAllowed = false;
                 animator.SetInteger("FoxAnimationOrder", 3);
 
-                //Меняем точки в зависимости от расположения игрока
+                //Change jump points, dependent on player position
                 float playerDirection = Mathf.Sign(transform.position.x - player.transform.position.x);
                 UpdateJumpingPoints(playerDirection);
 
@@ -132,6 +131,5 @@ public class DivingFox : Enemy
         UpdateGlobalWaypoints();
         fromWaypointIndex = 0;
         toWaypointIndex = 1;
-
     }
 }

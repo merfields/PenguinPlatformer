@@ -5,7 +5,7 @@ using UnityEngine;
 public class Raven : Enemy
 {
 
-    Vector2 enemyVelocity;
+    private Vector2 enemyVelocity;
 
     // Update is called once per frame
     protected override void Update()
