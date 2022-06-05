@@ -39,10 +39,7 @@ public class WaypointController : RaycastController
     }
 
     // Update is called once per frame
-    protected virtual void Update()
-    {
-
-    }
+    protected virtual void Update(){}
 
     protected float Ease(float x)
     {

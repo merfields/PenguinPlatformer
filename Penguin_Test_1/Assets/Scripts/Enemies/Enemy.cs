@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-
 [RequireComponent(typeof(Controller2D))]
 public class Enemy : WaypointController
 {
@@ -9,11 +8,9 @@ public class Enemy : WaypointController
     protected Controller2D controller;
     [SerializeField]
     protected bool isFacingRight;
-    [SerializeField]
-    protected float enemyGravity = -9.81f;
+    [SerializeField] protected float enemyGravity = -9.81f;
 
-    [SerializeField]
-    protected float enemyHP = 1;
+    [SerializeField] protected float enemyHP = 1;
 
 
     // Start is called before the first frame update
@@ -25,10 +22,7 @@ public class Enemy : WaypointController
     }
 
     // Update is called once per frame
-    protected override void Update()
-    {
-    }
-
+    protected override void Update(){}
     protected void Flip()
     {
         isFacingRight = !isFacingRight;
@@ -38,7 +32,8 @@ public class Enemy : WaypointController
         transform.localScale = theScale;
     }
 
-    public virtual void TakeDamage(float damage) {
+    public virtual void TakeDamage(float damage)
+    {
         enemyHP -= damage;
         Debug.Log(enemyHP);
 
@@ -58,11 +53,7 @@ public class Enemy : WaypointController
         yield return null;
     }
 
-    protected virtual void EnemyMovement()
-    {
-
-    }
-
+    protected virtual void EnemyMovement(){}
     protected virtual IEnumerator EnemyKnockback()
     {
         yield return null;

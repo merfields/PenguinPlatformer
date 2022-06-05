@@ -5,15 +5,11 @@ using UnityEngine;
 public class FallingSpike : WaypointController
 {
     Controller2D controller;
-    
-    [SerializeField]
-    Vector2 fallVelocity;
+    [SerializeField] Vector2 fallVelocity;
 
-    [SerializeField]
-    Vector2 returnVelocity;
+    [SerializeField] Vector2 returnVelocity;
 
-    [SerializeField]
-    float waitTimeAfterFall;
+    [SerializeField] float waitTimeAfterFall;
 
     [SerializeField]
     float waitTimeBeforeFall;

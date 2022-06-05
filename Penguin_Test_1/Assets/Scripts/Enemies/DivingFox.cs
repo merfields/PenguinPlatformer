@@ -4,7 +4,6 @@ using UnityEngine;
 public class DivingFox : Enemy
 {
     [SerializeField] Player player;
-
     Vector2 enemyVelocity;
     bool foxMovementAllowed = false;
 
@@ -21,7 +20,7 @@ public class DivingFox : Enemy
     protected override void Start()
     {
         base.Start();
-        animator.SetInteger("AnimationOrder", 0);
+        animator.SetInteger("FoxAnimationOrder", 0);
         StartCoroutine("DivingFoxMovementCoroutine");
     }
 
@@ -40,6 +39,8 @@ public class DivingFox : Enemy
             destination.x = globalWaypoints[2].x;
             destination.y = globalWaypoints[2].y;
 
+
+            //While the player is close enough, perform jumping attack
             while (Vector2.Distance(transform.position, player.transform.position) <= 5)
             {
                 UpdateGlobalWaypoints();
@@ -55,7 +56,7 @@ public class DivingFox : Enemy
                     globalWaypoints[2].y -= 10;
                 }
 
-                animator.SetInteger("AnimationOrder", 1);
+                animator.SetInteger("FoxAnimationOrder", 1);
                 foxMovementAllowed = true;
 
                 //Юнит достигает точки назначения
@@ -63,52 +64,23 @@ public class DivingFox : Enemy
                 {
                     if (fromWaypointIndex == 1)
                     {
-                        animator.SetInteger("AnimationOrder", 2);
+                        animator.SetInteger("FoxAnimationOrder", 2);
                     }
                     yield return null;
                 }
                 foxMovementAllowed = false;
-                animator.SetInteger("AnimationOrder", 3);
+                animator.SetInteger("FoxAnimationOrder", 3);
 
                 //Меняем точки в зависимости от расположения игрока
-                if ((transform.position.x - player.transform.position.x) >= 0)
-                {
-                    localWayponts[2].x = localWayponts[0].x - Mathf.Abs(localWayponts[2].x);
-                    localWayponts[1].x = localWayponts[0].x - Mathf.Abs(localWayponts[1].x);
-                    UpdateGlobalWaypoints();
-                    fromWaypointIndex = 0;
-                    toWaypointIndex = 1;
+                float playerDirection = Mathf.Sign(transform.position.x - player.transform.position.x);
+                UpdateJumpingPoints(playerDirection);
 
-                    yield return new WaitForSeconds(1f);
-                    animator.SetInteger("AnimationOrder", 4);
+                yield return new WaitForSeconds(1f);
+                animator.SetInteger("FoxAnimationOrder", 4);
 
-                    if (isFacingRight)
-                    {
-                        Flip();
-                    }
-                    isFacingRight = false;
+                TurnTowardsThePlayer(playerDirection);
 
-                    yield return new WaitForSeconds(0.3f);
-                }
-                else
-                {
-                    localWayponts[2].x = localWayponts[0].x + Mathf.Abs(localWayponts[2].x);
-                    localWayponts[1].x = localWayponts[0].x + Mathf.Abs(localWayponts[1].x);
-                    UpdateGlobalWaypoints();
-                    fromWaypointIndex = 0;
-                    toWaypointIndex = 1;
-
-                    yield return new WaitForSeconds(1f);
-                    animator.SetInteger("AnimationOrder", 4);
-
-                    if (!isFacingRight)
-                    {
-                        Flip();
-                    }
-                    isFacingRight = true;
-
-                    yield return new WaitForSeconds(0.3f);
-                }
+                yield return new WaitForSeconds(0.3f);
 
                 percentBetweenWaypoints = 0;
 
@@ -125,10 +97,41 @@ public class DivingFox : Enemy
                 foxMovementAllowed = false;
                 percentBetweenWaypoints = 0;
 
-
-                animator.SetInteger("AnimationOrder", 4);
+                animator.SetInteger("FoxAnimationOrder", 4);
             }
             yield return null;
         }
+    }
+
+    private void TurnTowardsThePlayer(float playerDirection)
+    {
+        if (playerDirection >= 0)
+        {
+            if (isFacingRight)
+            {
+                Flip();
+            }
+
+            isFacingRight = false;
+        }
+        else
+        {
+            if (!isFacingRight)
+            {
+                Flip();
+            }
+
+            isFacingRight = true;
+        }
+    }
+
+    private void UpdateJumpingPoints(float playerDirection)
+    {
+        localWayponts[2].x = localWayponts[0].x - playerDirection * (Mathf.Abs(localWayponts[2].x));
+        localWayponts[1].x = localWayponts[0].x - playerDirection * (Mathf.Abs(localWayponts[1].x));
+        UpdateGlobalWaypoints();
+        fromWaypointIndex = 0;
+        toWaypointIndex = 1;
+
     }
 }
