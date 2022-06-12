@@ -22,6 +22,7 @@ public class Checkpoint : MonoBehaviour
         if (collision.CompareTag("Player") && !alreadyChecked)
         {
             am.PlayClip("Checkpoint");
+            
             cm.LastCheckpointPosition = transform.position;
             sr.sprite = greenFlag;
             alreadyChecked = true;
