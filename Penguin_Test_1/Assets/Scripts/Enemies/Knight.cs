@@ -17,7 +17,6 @@ public class Knight : Enemy
     [SerializeField] private AudioManager audioManager;
 
     [SerializeField] private float distanceToPlayerToAttack = 3f;
-    [SerializeField] private float distanceToPlayerToMove = 10f;
     private float distanceToPlayer;
 
     private bool knockbackCouroutineStarted = false;
@@ -39,7 +38,7 @@ public class Knight : Enemy
 
         distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
 
-        if (!isAttacking && (distanceToPlayer <= distanceToPlayerToMove) && !knockbackCouroutineStarted)
+        if (!isAttacking && !knockbackCouroutineStarted)
         {
             EnemyMovement();
         }
@@ -56,18 +55,24 @@ public class Knight : Enemy
         {
             if (knockbackCount <= 0)
             {
+                CheckForFall();
+                CheckForWalls();
+
                 if (controller.collisions.Below || controller.collisions.Above)
                 {
                     enemyVelocity.y = 0;
                 }
+
+                if (!hitBySlide)
+                {
+                    enemyVelocity = CalculateObjectMovement();
+                }
             }
 
-            if (knockbackCount <= 0 && !hitBySlide)
+            if (hitBySlide)
             {
-                enemyVelocity = CalculateObjectMovement();
+                enemyVelocity.y += enemyGravity * Time.deltaTime;
             }
-
-            enemyVelocity.y += enemyGravity * Time.deltaTime;
             controller.Move(enemyVelocity);
         }
         else
@@ -147,5 +152,36 @@ public class Knight : Enemy
         globalWaypoints[1] += transform.position - positionBeforeKnockback;
 
         knockbackCouroutineStarted = false;
+    }
+
+    private void CheckForFall()
+    {
+        Vector2 rayOriginRight = raycastOrigins.bottomRight;
+        Vector2 rayOriginLeft = raycastOrigins.bottomLeft;
+        RaycastHit2D hitRight = Physics2D.Raycast(rayOriginRight, -Vector2.up, 1, collisionMask);
+        RaycastHit2D hitleft = Physics2D.Raycast(rayOriginLeft, -Vector2.up, 1, collisionMask);
+
+        Debug.DrawRay(rayOriginLeft, -Vector2.up * 1, Color.green);
+        Debug.DrawRay(rayOriginRight, -Vector2.up * 1, Color.green);
+
+        if (!hitRight || !hitleft)
+        {
+            ChangeToReachableWaypoints();
+        }
+    }
+
+    private void ChangeToReachableWaypoints()
+    {
+        globalWaypoints[0] -= globalWaypoints[1] - transform.position;
+        globalWaypoints[1] = transform.position;
+        NoMoreWaypoints();
+    }
+
+    private void CheckForWalls()
+    {
+        if (controller.collisions.Right || controller.collisions.Left)
+        {
+            ChangeToReachableWaypoints();
+        }
     }
 }

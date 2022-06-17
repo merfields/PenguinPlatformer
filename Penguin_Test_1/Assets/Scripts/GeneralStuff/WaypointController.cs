@@ -66,24 +66,28 @@ public class WaypointController : RaycastController
 
         if (percentBetweenWaypoints >= 1)
         {
-            percentBetweenWaypoints = 0;
-            fromWaypointIndex++;
-
-            if (!cyclic)
-            {
-                if (fromWaypointIndex >= globalWaypoints.Length - 1)
-                {
-                    fromWaypointIndex = 0;
-                    System.Array.Reverse(globalWaypoints);
-                }
-            }
-            nextMoveTime = Time.time + waitTime;
+            NoMoreWaypoints();
         }
 
         return newPos - transform.position;
     }
 
-   
+    protected void NoMoreWaypoints()
+    {
+        percentBetweenWaypoints = 0;
+        fromWaypointIndex++;
+
+        if (!cyclic)
+        {
+            if (fromWaypointIndex >= globalWaypoints.Length - 1)
+            {
+                fromWaypointIndex = 0;
+                System.Array.Reverse(globalWaypoints);
+            }
+        }
+        nextMoveTime = Time.time + waitTime;
+    }
+
 
     protected void OnDrawGizmos()
     {
