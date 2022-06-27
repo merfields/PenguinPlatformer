@@ -63708,55 +63708,55 @@ MonoBehaviour:
   sounds:
   - name: LevelTheme
     audioClip: {fileID: 8300000, guid: 08fab11f5301fa0479f417fca4f4d112, type: 3}
-    volume: 0.132
+    volume: 0.083
     pitch: 1
     loop: 1
     source: {fileID: 0}
   - name: Jump
     audioClip: {fileID: 8300000, guid: f5838468c837d1a42a1f568add0410ca, type: 3}
-    volume: 0.15
+    volume: 0.083
     pitch: 0.62
     loop: 0
     source: {fileID: 0}
   - name: Death
     audioClip: {fileID: 8300000, guid: 92541a234584aee4fa94c8c30ec1491d, type: 3}
-    volume: 0.669
+    volume: 0.083
     pitch: 0.86
     loop: 0
     source: {fileID: 0}
   - name: Attack
     audioClip: {fileID: 8300000, guid: 0943c9e8ca1cc81479c104119ce8d1b8, type: 3}
-    volume: 0.246
+    volume: 0.083
     pitch: 0.86
     loop: 0
     source: {fileID: 0}
   - name: Land
     audioClip: {fileID: 8300000, guid: 4571ab47170862e48b3e4e31f80b7e5a, type: 3}
-    volume: 0.859
+    volume: 0.083
     pitch: 1
     loop: 0
     source: {fileID: 0}
   - name: Checkpoint
     audioClip: {fileID: 8300000, guid: c037a08027750be4a8860dab9c104444, type: 3}
-    volume: 0.688
+    volume: 0.083
     pitch: 1
     loop: 0
     source: {fileID: 0}
   - name: EnemyDamaged
     audioClip: {fileID: 8300000, guid: 6b36b1e1d46f3274b807246873fddc3b, type: 3}
-    volume: 1
+    volume: 0.083
     pitch: 1
     loop: 0
     source: {fileID: 0}
   - name: Slide
     audioClip: {fileID: 8300000, guid: 4d31dd788ee8c214ebbc55f86028e94c, type: 3}
-    volume: 0.16
+    volume: 0.15
     pitch: 1
     loop: 0
     source: {fileID: 0}
   - name: CharacterDamaged
     audioClip: {fileID: 8300000, guid: 8d6741bb21aa62646995866f3066571d, type: 3}
-    volume: 0.16
+    volume: 0.083
     pitch: 1
     loop: 0
     source: {fileID: 0}

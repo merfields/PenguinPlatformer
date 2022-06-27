@@ -255,7 +255,10 @@ public class Player : MonoBehaviour
             //Find velocity, different for sliding
 
             moveInput = playerInput.GetMovementInputVector();
-            velocity.x = FindVeloctiyX();
+            if (!isAttacking)
+            {
+                velocity.x = FindVeloctiyX();
+            }
 
             //Поворот модели
 
