@@ -46,7 +46,7 @@ GameObject:
   - component: {fileID: 842600252510050036}
   - component: {fileID: 842600252510050037}
   m_Layer: 10
-  m_Name: NewPlayer
+  m_Name: PlayerPrefab
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -82,6 +82,7 @@ SpriteRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -160,11 +161,11 @@ MonoBehaviour:
   collisionMask:
     serializedVersion: 2
     m_Bits: 512
-  wasGrounded: 0
   OnLandEvent:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 842600252510050039}
+        m_TargetAssemblyTypeName: 
         m_MethodName: OnLanding
         m_Mode: 1
         m_Arguments:
@@ -194,7 +195,7 @@ MonoBehaviour:
     m_Bits: 2048
   attackRadius: 0.86
   invincibilityTime: 1
-  playerInput: {x: 0, y: 0}
+  moveInput: {x: 0, y: 0}
   moveSpeed: 6
   slidingMoveSpeed: 16
   jumpHeight: 3.5

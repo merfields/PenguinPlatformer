@@ -15,6 +15,7 @@ public class Player : MonoBehaviour
     [SerializeField] private AudioManager audioManager;
     Animator animator;
     CheckpointManager cm;
+    PlayerInput playerInput;
     #endregion
 
     #region Attacking
@@ -133,6 +134,7 @@ public class Player : MonoBehaviour
         playerKnockbackTimer = gameObject.AddComponent<Timer>();
         attackTimer = gameObject.AddComponent<Timer>();
         slideCooldown = gameObject.AddComponent<Timer>();
+        playerInput = new PlayerInput();
 
         //Calculating gravitation, dependent on jump height and time to reach the highest jump point
         gravity = -(2 * jumpHeight) / Mathf.Pow(timeToJumpApex, 2);
@@ -153,7 +155,7 @@ public class Player : MonoBehaviour
         if (isAbleToAct)
         {
             //Attacking
-            if (Input.GetButtonDown("Fire2") && attackTimer.TimeLeft <= 0 && isGrounded)
+            if (playerInput.CheckIfPressedAttack() && attackTimer.TimeLeft <= 0 && isGrounded)
             {
                 isAttacking = true;
                 velocity.x = 0;
@@ -167,7 +169,7 @@ public class Player : MonoBehaviour
 
             //Sliding
 
-            if (Input.GetButtonDown("Fire1") && !isSliding && slideCooldown.TimeLeft == 0 && isGrounded)
+            if (playerInput.CheckIfPressedSlide() && !isSliding && slideCooldown.TimeLeft == 0 && isGrounded)
             {
                 isSliding = true;
                 slideCounter.TimeLeft = 0.5f;
@@ -225,7 +227,7 @@ public class Player : MonoBehaviour
 
             //Jumping
 
-            if (Input.GetButtonDown("Jump"))
+            if (playerInput.CheckIfPressedJump())
             {
                 jumpBuffer.TimeLeft = 0.2f;
 
@@ -239,7 +241,7 @@ public class Player : MonoBehaviour
             {
                 RegularJump();
             }
-            if (Input.GetKeyUp(KeyCode.Space))
+            if (playerInput.CheckIfJumpCancelled())
             {
                 JumpCancel();
             }
@@ -252,7 +254,7 @@ public class Player : MonoBehaviour
 
             //Find velocity, different for sliding
 
-            moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            moveInput = playerInput.GetMovementInputVector();
             velocity.x = FindVeloctiyX();
 
             //Поворот модели
