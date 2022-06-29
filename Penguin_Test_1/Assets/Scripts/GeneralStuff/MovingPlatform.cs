@@ -68,7 +68,7 @@ public class MovingPlatform : WaypointController
             }
         }
 
-        //Horrizontally moving platform
+        //Horizontally moving platform
 
         if (velocity.x != 0)
         {

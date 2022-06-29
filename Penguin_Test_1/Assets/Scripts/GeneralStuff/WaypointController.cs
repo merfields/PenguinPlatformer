@@ -2,14 +2,14 @@
 
 public class WaypointController : RaycastController
 {
-    public Vector3[] localWayponts;
+    [SerializeField] protected Vector3[] localWayponts;
     protected Vector3[] globalWaypoints;
-
-    public float speed;
-    public bool cyclic;
-    public float waitTime;
+    [SerializeField] protected float speed;
+    private bool cyclic;
+    [SerializeField] protected float waitTime;
+    
     [Range(0,2)]
-    public float easeAmount;
+    [SerializeField] private float easeAmount;
 
     protected int fromWaypointIndex = 0;
     protected int toWaypointIndex = 1;

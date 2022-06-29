@@ -119,7 +119,6 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        //Сделать cm dont destroy on load 
         cm = GameObject.Find("CheckpointManager" + SceneManager.GetActiveScene().buildIndex).GetComponent<CheckpointManager>();
         transform.position = cm.LastCheckpointPosition;
 
